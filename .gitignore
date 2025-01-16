@@ -23,6 +23,7 @@ wandb
 output
 
 checkpoints
+train_data
 ckpts*
 
 .ipynb_checkpoints
