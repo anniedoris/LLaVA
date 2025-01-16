@@ -6,6 +6,8 @@
 
 # MODEL_VERSION=vicuna-v1-3-7b
 # MODEL_VERSION=llama-2-7b-chat
+MODEL_VERSION=NousResearch/Llama-2-7b-chat-hf
+SAVE_DIR=test
 
 ########### DO NOT CHANGE ###########
 ########### USE THIS FOR BOTH ###########
@@ -14,17 +16,17 @@ PROMPT_VERSION=plain
 
 deepspeed llava/train/train_mem.py \
     --deepspeed ./scripts/zero2.json \
-    --model_name_or_path ./checkpoints/$MODEL_VERSION \
+    --model_name_or_path $MODEL_VERSION \
     --version $PROMPT_VERSION \
-    --data_path /path/to/pretrain_data.json \
-    --image_folder /path/to/images \
+    --data_path /home/annie/LLaVA/train_data/blip_laion_cc_sbu_558k.json \
+    --image_folder /home/annie/LLaVA/train_data/ \
     --vision_tower openai/clip-vit-large-patch14 \
     --tune_mm_mlp_adapter True \
     --mm_vision_select_layer -2 \
     --mm_use_im_start_end False \
     --mm_use_im_patch_token False \
     --bf16 True \
-    --output_dir ./checkpoints/llava-$MODEL_VERSION-pretrain \
+    --output_dir ./checkpoints/llava-$SAVE_DIR-pretrain \
     --num_train_epochs 1 \
     --per_device_train_batch_size 16 \
     --per_device_eval_batch_size 4 \
