@@ -3,6 +3,10 @@
 ## Annie Notes
 Pretraining data was stored at ```train_data```. All images folders and .json for image-text pairs.
 
+For eval on GenCAD, use script ```scripts/v1_5/eval/gencad_test.sh```. 
+
+## End Notes
+
 *Visual instruction tuning towards large language and vision models with GPT-4 level capabilities.*
 
 [📢 [LLaVA-NeXT Blog](https://llava-vl.github.io/blog/2024-01-30-llava-next/)] [[Project Page](https://llava-vl.github.io/)] [[Demo](https://llava.hliu.cc/)]  [[Data](https://github.com/haotian-liu/LLaVA/blob/main/docs/Data.md)] [[Model Zoo](https://github.com/haotian-liu/LLaVA/blob/main/docs/MODEL_ZOO.md)]
