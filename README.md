@@ -1,5 +1,12 @@
 # 🌋 LLaVA: Large Language and Vision Assistant
 
+## Notes on Setting Up Environment on H100s
+Followed the environment set up steps using what was specified in the LLaVA repo. When I got to the ```pip install flash-attn --no-build-isolation``` step, this did not work. Instead, I downloaded the relevant wheel file:
+```flash_attn-2.7.2.post1+cu12torch2.1cxx11abiFALSE-cp310-cp310-linux_x86_64.whl```
+From [this](https://github.com/Dao-AILab/flash-attention/releases) website. 
+
+Once I started running training code, I got an error about ```Failed to import transformers.trainer```. [This fix](https://github.com/haotian-liu/LLaVA/issues/1808) solved my problem.
+
 ## Annie Notes
 Pretraining data was stored at ```train_data```. All images folders and .json for image-text pairs.
 
