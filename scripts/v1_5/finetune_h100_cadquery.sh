@@ -4,10 +4,10 @@ deepspeed llava/train/train_mem.py \
     --deepspeed ./scripts/zero3.json \
     --model_name_or_path lmsys/vicuna-13b-v1.5 \
     --version v1 \
-    --data_path /orcd/data/faez/001/annie/llava/finetune_data/cadquery_train_data_2048.json \
+    --data_path /orcd/data/faez/001/annie/llava/finetune_data/cadquery_train_data_4096.json \
     --image_folder /orcd/data/faez/001/annie/llava/finetune_data \
     --vision_tower openai/clip-vit-large-patch14-336 \
-    --pretrain_mm_mlp_adapter /orcd/data/faez/001/annie/llava/checkpoints/llava-v1.5-13b-pretrain-4gpu/mm_projector.bin \
+    --pretrain_mm_mlp_adapter /orcd/data/faez/001/annie/llava/checkpoints/llava-v1.5-13b-pretrain-4gpu-4096/mm_projector.bin \
     --mm_projector_type mlp2x_gelu \
     --mm_vision_select_layer -2 \
     --mm_use_im_start_end False \
@@ -15,7 +15,7 @@ deepspeed llava/train/train_mem.py \
     --image_aspect_ratio pad \
     --group_by_modality_length True \
     --bf16 True \
-    --output_dir /orcd/data/faez/001/annie/llava/checkpoints/llava-v1.5-13b-4gpu-cadquery-2048 \
+    --output_dir /orcd/data/faez/001/annie/llava/checkpoints/llava-v1.5-13b-4gpu-cadquery-4096 \
     --num_train_epochs 1 \
     --per_device_train_batch_size 4 \
     --per_device_eval_batch_size 4 \
@@ -30,7 +30,7 @@ deepspeed llava/train/train_mem.py \
     --lr_scheduler_type "cosine" \
     --logging_steps 1 \
     --tf32 True \
-    --model_max_length 2048 \
+    --model_max_length 4096 \
     --gradient_checkpointing True \
     --dataloader_num_workers 4 \
     --lazy_preprocess True \
