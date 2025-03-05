@@ -15,6 +15,30 @@ wget http://ecx.images-amazon.com/images/I/51YTH4k3fUL.jpg
 cp 51YTH4k3fUL.jpg playground/data/ocr_vqa/images/1437717772.jpg
 ```
 
+## Annie's Additions for Computing Metrics
+
+### To generate code files, STLs, and point clouds...
+
+To generate CAD for a trained model, run the following with the cad_gen conda environment activated:
+
+```
+python scripts/generate_model_cad.py --dataset_name {dataset_name} --model_tested {model_name} --code_language cadquery --pc_reps 3 --parallel
+```
+
+--pc_reps dictates how many point clouds will be generated for each CAD (different random samples). Currently, only --parallel is supported.
+
+### To evaluate accuracy of point clouds
+
+TODO: clone Annie's fork of DeepCAD at the same level as this LLaVA repo. cd into evaluation director in DeepCAD. 
+
+To compute chamfer distance, run the following with cad_code conda environment activated:
+
+```
+python evaluate_ae_cd.py --pc_folder "/orcd/data/faez/001/annie/llava/checkpoints/test_model/eval/validate_data/model_point_cloud" --test_jsonl "/orcd/data/faez/001/annie/llava/eval/gencad_cadquery/cadquery_test_data.jsonl"
+```
+
+--test_jsonl should point to the question file .jsonl that the model was tested on.
+
 ## Annie Notes
 Pretraining data was stored at ```train_data```. All images folders and .json for image-text pairs.
 
