@@ -2,7 +2,7 @@
 
 deepspeed llava/train/train_mem.py \
     --deepspeed ./scripts/zero2.json \
-    --model_name_or_path lmsys/vicuna-13b-v1.5 \
+    --model_name_or_path Qwen/Qwen2.5-Coder-14B-Instruct \
     --version plain \
     --data_path /orcd/data/faez/001/annie/llava/pretrain/blip_laion_cc_sbu_558k.json \
     --image_folder /orcd/data/faez/001/annie/llava/pretrain/images \
@@ -13,11 +13,11 @@ deepspeed llava/train/train_mem.py \
     --mm_use_im_start_end False \
     --mm_use_im_patch_token False \
     --bf16 True \
-    --output_dir /orcd/data/faez/001/annie/llava/checkpoints/llava-v1.5-13b-pretrain-4gpu-4096 \
+    --output_dir /orcd/data/faez/001/annie/llava/checkpoints/Qwen2.5-Coder-32B-Instruct-pretrain \
     --num_train_epochs 1 \
-    --per_device_train_batch_size 64 \
+    --per_device_train_batch_size 16 \
     --per_device_eval_batch_size 4 \
-    --gradient_accumulation_steps 1 \
+    --gradient_accumulation_steps 4 \
     --evaluation_strategy "no" \
     --save_strategy "steps" \
     --save_steps 1000 \
