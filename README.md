@@ -39,12 +39,15 @@ python evaluate_ae_cd.py --pc_folder "/orcd/data/faez/001/annie/llava/checkpoint
 
 --test_jsonl should point to the question file .jsonl that the model was tested on.
 
-## Annie Notes
-Pretraining data was stored at ```train_data```. All images folders and .json for image-text pairs.
+### Evaluating Open Source External Models
+With llm_test activate:
 
-For eval on GenCAD, use script ```scripts/v1_5/eval/gencad_test.sh```. 
+```
+python scripts/eval_external_models/internvl.py
+```
 
-## End Notes
+## Qwen Dev
+Use conda environment ```llava_train```. If you make modifications to certain things, will need to reinstall llava as a package via pip install -e .
 
 *Visual instruction tuning towards large language and vision models with GPT-4 level capabilities.*
 

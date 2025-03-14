@@ -1,4 +1,3 @@
-
 #    Copyright 2023 Haotian Liu
 #
 #    Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,40 +12,38 @@
 #    See the License for the specific language governing permissions and
 #    limitations under the License.
 
-# Taken from: https://github.com/TobyYang7/Llava_Qwen2/blob/main/llava/model/language_model/llava_qwen.py
-
 
 from typing import List, Optional, Tuple, Union
 
 import torch
 import torch.nn as nn
 
-from transformers import AutoConfig, AutoModelForCausalLM, Qwen2Config, Qwen2Model, Qwen2ForCausalLM
+from transformers import AutoConfig, AutoModelForCausalLM, \
+                         Qwen2Config, Qwen2Model, Qwen2ForCausalLM
 
 from transformers.modeling_outputs import CausalLMOutputWithPast
 from transformers.generation.utils import GenerateOutput
 
 from ..llava_arch import LlavaMetaModel, LlavaMetaForCausalLM
 
-
-class LlavaConfig(Qwen2Config):
+# New definition
+class LlavaQwen2Config(Qwen2Config):
     model_type = "llava_qwen2"
 
-
+# New definition
 class LlavaQwen2Model(LlavaMetaModel, Qwen2Model):
-    config_class = LlavaConfig
+    config_class = LlavaQwen2Config
 
     def __init__(self, config: Qwen2Config):
         super(LlavaQwen2Model, self).__init__(config)
 
-
+# New definition
 class LlavaQwen2ForCausalLM(Qwen2ForCausalLM, LlavaMetaForCausalLM):
-    config_class = LlavaConfig
+    config_class = LlavaQwen2Config
 
     def __init__(self, config):
         super(Qwen2ForCausalLM, self).__init__(config)
         self.model = LlavaQwen2Model(config)
-        # self.pretraining_tp = config.pretraining_tp
         self.vocab_size = config.vocab_size
         self.lm_head = nn.Linear(config.hidden_size, config.vocab_size, bias=False)
 
@@ -56,6 +53,7 @@ class LlavaQwen2ForCausalLM(Qwen2ForCausalLM, LlavaMetaForCausalLM):
     def get_model(self):
         return self.model
 
+    # Stays the same
     def forward(
         self,
         input_ids: torch.LongTensor = None,
@@ -72,6 +70,7 @@ class LlavaQwen2ForCausalLM(Qwen2ForCausalLM, LlavaMetaForCausalLM):
         return_dict: Optional[bool] = None,
     ) -> Union[Tuple, CausalLMOutputWithPast]:
 
+        # Stays the same
         if inputs_embeds is None:
             (
                 input_ids,
@@ -103,6 +102,7 @@ class LlavaQwen2ForCausalLM(Qwen2ForCausalLM, LlavaMetaForCausalLM):
             return_dict=return_dict
         )
 
+    # Stays the same
     @torch.no_grad()
     def generate(
         self,
@@ -156,6 +156,5 @@ class LlavaQwen2ForCausalLM(Qwen2ForCausalLM, LlavaMetaForCausalLM):
             inputs['image_sizes'] = image_sizes
         return inputs
 
-
-AutoConfig.register("llava_qwen2", LlavaConfig)
-AutoModelForCausalLM.register(LlavaConfig, LlavaQwen2ForCausalLM)
+AutoConfig.register("llava_qwen2", LlavaQwen2Config)
+AutoModelForCausalLM.register(LlavaQwen2Config, LlavaQwen2ForCausalLM)

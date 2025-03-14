@@ -2,7 +2,7 @@
 
 deepspeed llava/train/train_mem.py \
     --deepspeed ./scripts/zero2.json \
-    --model_name_or_path Qwen/Qwen2.5-Coder-14B-Instruct \
+    --model_name_or_path Qwen/Qwen2.5-Coder-7B-Instruct \
     --version plain \
     --data_path /orcd/data/faez/001/annie/llava/pretrain/blip_laion_cc_sbu_558k.json \
     --image_folder /orcd/data/faez/001/annie/llava/pretrain/images \
@@ -13,7 +13,7 @@ deepspeed llava/train/train_mem.py \
     --mm_use_im_start_end False \
     --mm_use_im_patch_token False \
     --bf16 True \
-    --output_dir /orcd/data/faez/001/annie/llava/checkpoints/Qwen2.5-Coder-32B-Instruct-pretrain \
+    --output_dir /orcd/data/faez/001/annie/llava/checkpoints/Qwen2.5-Coder-7B-Instruct-pretrain-mycode \
     --num_train_epochs 1 \
     --per_device_train_batch_size 16 \
     --per_device_eval_batch_size 4 \

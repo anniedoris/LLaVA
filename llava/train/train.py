@@ -698,12 +698,7 @@ class LazySupervisedDataset(Dataset):
             image_file = self.list_data_dict[i]['image']
             image_folder = self.data_args.image_folder
             processor = self.data_args.image_processor
-            
-            try:
-                image = Image.open(os.path.join(image_folder, image_file)).convert('RGB')
-            except (IOError, OSError):
-                print(f"Corrupted image: {os.path.join(image_folder, image_file)}")
-            
+            image = Image.open(os.path.join(image_folder, image_file)).convert('RGB')
             if self.data_args.image_aspect_ratio == 'pad':
                 def expand2square(pil_img, background_color):
                     width, height = pil_img.size
@@ -793,12 +788,14 @@ def make_supervised_data_module(tokenizer: transformers.PreTrainedTokenizer,
 def train(attn_implementation=None):
     global local_rank
 
+    # Stays the same
     parser = transformers.HfArgumentParser(
         (ModelArguments, DataArguments, TrainingArguments))
     model_args, data_args, training_args = parser.parse_args_into_dataclasses()
     local_rank = training_args.local_rank
     compute_dtype = (torch.float16 if training_args.fp16 else (torch.bfloat16 if training_args.bf16 else torch.float32))
 
+    # Stays the same
     bnb_model_from_pretrained_args = {}
     if training_args.bits in [4, 8]:
         from transformers import BitsAndBytesConfig
@@ -818,6 +815,7 @@ def train(attn_implementation=None):
             )
         ))
 
+    # Training with vision tower
     if model_args.vision_tower is not None:
         if 'mpt' in model_args.model_name_or_path:
             config = transformers.AutoConfig.from_pretrained(model_args.model_name_or_path, trust_remote_code=True)
@@ -828,7 +826,10 @@ def train(attn_implementation=None):
                 cache_dir=training_args.cache_dir,
                 **bnb_model_from_pretrained_args
             )
-        elif 'qwen' in model_args.model_name_or_path.lower():
+        
+        # ADDED for qwen
+        elif "qwen2.5" in model_args.model_name_or_path.lower():
+            print("---Loading Qwen2 Model---")
             model = LlavaQwen2ForCausalLM.from_pretrained(
                 model_args.model_name_or_path,
                 cache_dir=training_args.cache_dir,
@@ -836,8 +837,10 @@ def train(attn_implementation=None):
                 torch_dtype=(torch.bfloat16 if training_args.bf16 else None),
                 **bnb_model_from_pretrained_args
             )
-            print(f"{model}")
+            print(model)
+        
         else:
+            print("---Loading Llama Model---")
             model = LlavaLlamaForCausalLM.from_pretrained(
                 model_args.model_name_or_path,
                 cache_dir=training_args.cache_dir,
@@ -845,6 +848,7 @@ def train(attn_implementation=None):
                 torch_dtype=(torch.bfloat16 if training_args.bf16 else None),
                 **bnb_model_from_pretrained_args
             )
+            print(model)
     else:
         model = transformers.LlamaForCausalLM.from_pretrained(
             model_args.model_name_or_path,
@@ -914,23 +918,22 @@ def train(attn_implementation=None):
             )
     elif model_args.version == "v0.5":
         tokenizer.pad_token = tokenizer.unk_token
-    else:
-        if 'qwen' in model_args.model_name_or_path.lower(): # this code block is taken from train_qwen.py at: https://github.com/TobyYang7/Llava_Qwen2/blob/main/llava/train/train_qwen.py
-            if tokenizer.unk_token:
-                tokenizer.pad_token = tokenizer.unk_token
-            else:  # use qwen
-                tokenizer.legacy = False
-            if model_args.version in conversation_lib.conv_templates:
-                # print('version:', model_args.version)
-                conversation_lib.default_conversation = conversation_lib.conv_templates[model_args.version]
-            else:
-                conversation_lib.default_conversation = conversation_lib.conv_templates["vicuna_v1"]
-        else:
+    else: # plain is triggered here
+        print("---Tokenizer---")
+        print(tokenizer)
+        print(tokenizer.unk_token)
+        
+        if tokenizer.unk_token:
             tokenizer.pad_token = tokenizer.unk_token
-            if model_args.version in conversation_lib.conv_templates:
-                conversation_lib.default_conversation = conversation_lib.conv_templates[model_args.version]
-            else:
-                conversation_lib.default_conversation = conversation_lib.conv_templates["vicuna_v1"]
+        else: #ADDED for qwen
+            tokenizer.legacy = False #idk what this does exactly
+        
+        if model_args.version in conversation_lib.conv_templates:
+            conversation_lib.default_conversation = conversation_lib.conv_templates[model_args.version] #TODO: add version for qwen
+            print("---Initializing Conversation Template---")
+            print(conversation_lib.default_conversation)
+        else:
+            conversation_lib.default_conversation = conversation_lib.conv_templates["vicuna_v1"]
 
     if model_args.vision_tower is not None:
         model.get_model().initialize_vision_modules(
@@ -940,8 +943,6 @@ def train(attn_implementation=None):
         
         vision_tower = model.get_vision_tower()
         vision_tower.to(dtype=torch.bfloat16 if training_args.bf16 else torch.float16, device=training_args.device)
-        # image_tokens = vision_tower.num_patches + 1  # +1 for CLS token
-        # print(f"Image tokens: {image_tokens}")
 
         data_args.image_processor = vision_tower.image_processor
         data_args.is_multimodal = True
