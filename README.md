@@ -49,7 +49,18 @@ python scripts/eval_external_models/internvl.py
 ## Qwen Dev
 Use conda environment ```llava_train```. If you make modifications to certain things, will need to reinstall llava as a package via pip install -e .
 
+### Chatting with Pretrained Qwen
+```python -m llava.serve.cli --model-base Qwen/Qwen2.5-Coder-7B-Instruct --model-path /orcd/data/faez/001/annie/llava/checkpoints/Qwen2.5-Coder-7B-Instruct-pretrain-mycode --image-file /orcd/data/faez/001/annie/llava/finetune_data/gencad_im/0000/00000007_0.png --temperature 0.0```
+
+## Running on H100s
+```srun -p pi_faez -t 3-00:00 -n 64 --mem=200000 --gres=gpu:4 --pty bash````
 *Visual instruction tuning towards large language and vision models with GPT-4 level capabilities.*
+
+## WIP
+Cli with pre-trained model
+
+````python -m llava.serve.cli --model-base lmsys/vicuna-7b-v1.5 --model-path /orcd/data/faez/001/annie/llava/checkpoints/llava-v1.5-13b-pretrain-4gpu-4096 --image-file /orcd/data/faez/001/annie/llava/finetune_data/gencad_im/0000/00
+000007_0.png --temperature 0.0
 
 [📢 [LLaVA-NeXT Blog](https://llava-vl.github.io/blog/2024-01-30-llava-next/)] [[Project Page](https://llava-vl.github.io/)] [[Demo](https://llava.hliu.cc/)]  [[Data](https://github.com/haotian-liu/LLaVA/blob/main/docs/Data.md)] [[Model Zoo](https://github.com/haotian-liu/LLaVA/blob/main/docs/MODEL_ZOO.md)]
 

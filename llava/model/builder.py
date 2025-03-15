@@ -45,7 +45,7 @@ def load_pretrained_model(model_path, model_base, model_name, load_8bit=False, l
     if use_flash_attn:
         kwargs['attn_implementation'] = 'flash_attention_2'
 
-    if 'llava' in model_name.lower():
+    if 'llava' in model_name.lower() or 'qwen2.5' in model_name.lower():
         # Load LLaVA model
         if 'lora' in model_name.lower() and model_base is None:
             warnings.warn('There is `lora` in model name but no `model_base` is provided. If you are loading a LoRA model, please provide the `model_base` argument. Detailed instruction: https://github.com/haotian-liu/LLaVA#launch-a-model-worker-lora-weights-unmerged.')
@@ -85,6 +85,7 @@ def load_pretrained_model(model_path, model_base, model_name, load_8bit=False, l
             model = model.merge_and_unload()
             print('Model is loaded...')
         elif model_base is not None:
+            print("--Loading PRETRAINED model--")
             # this may be mm projector only
             print('Loading LLaVA from base model...')
             if 'mpt' in model_name.lower():
@@ -93,7 +94,13 @@ def load_pretrained_model(model_path, model_base, model_name, load_8bit=False, l
                 tokenizer = AutoTokenizer.from_pretrained(model_base, use_fast=True)
                 cfg_pretrained = AutoConfig.from_pretrained(model_path, trust_remote_code=True)
                 model = LlavaMptForCausalLM.from_pretrained(model_base, low_cpu_mem_usage=True, config=cfg_pretrained, **kwargs)
+            elif "qwen2.5" in model_name.lower():
+                print("--Loading LlavaQwen2ForCausalLM model--")
+                tokenizer = AutoTokenizer.from_pretrained(model_base, use_fast=False)
+                cfg_pretrained = AutoConfig.from_pretrained(model_path)
+                model = LlavaQwen2ForCausalLM.from_pretrained(model_base, low_cpu_mem_usage=True, config=cfg_pretrained, **kwargs)
             else:
+                print("--Loading LlavaLlamaForCausalLM model--")
                 tokenizer = AutoTokenizer.from_pretrained(model_base, use_fast=False)
                 cfg_pretrained = AutoConfig.from_pretrained(model_path)
                 model = LlavaLlamaForCausalLM.from_pretrained(model_base, low_cpu_mem_usage=True, config=cfg_pretrained, **kwargs)
@@ -143,7 +150,7 @@ def load_pretrained_model(model_path, model_base, model_name, load_8bit=False, l
 
     image_processor = None
 
-    if 'llava' in model_name.lower():
+    if 'llava' in model_name.lower() or 'qwen2.5' in model_name.lower():
         mm_use_im_start_end = getattr(model.config, "mm_use_im_start_end", False)
         mm_use_im_patch_token = getattr(model.config, "mm_use_im_patch_token", True)
         if mm_use_im_patch_token:

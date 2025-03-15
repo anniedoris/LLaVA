@@ -30,7 +30,13 @@ def main(args):
 
     model_name = get_model_name_from_path(args.model_path)
     tokenizer, model, image_processor, context_len = load_pretrained_model(args.model_path, args.model_base, model_name, args.load_8bit, args.load_4bit, device=args.device)
-
+    
+    print("--Image Processor--")
+    print(image_processor)
+    
+    print("--Tokenizer Chat Template--")
+    print(tokenizer.chat_template)
+    
     if "llama-2" in model_name.lower():
         conv_mode = "llava_llama_2"
     elif "mistral" in model_name.lower():
@@ -39,8 +45,12 @@ def main(args):
         conv_mode = "chatml_direct"
     elif "v1" in model_name.lower():
         conv_mode = "llava_v1"
+        print("Using v1 conv mode")
     elif "mpt" in model_name.lower():
         conv_mode = "mpt"
+    elif "qwen2.5" in model_name.lower():
+        conv_mode = "qwen_2.5_instruct"
+        # raise ValueError("not finished implementing")
     else:
         conv_mode = "llava_v0"
 
@@ -50,7 +60,7 @@ def main(args):
         args.conv_mode = conv_mode
 
     conv = conv_templates[args.conv_mode].copy()
-    if "mpt" in model_name.lower():
+    if "mpt" in model_name.lower() or "qwen2.5" in model_name.lower():
         roles = ('user', 'assistant')
     else:
         roles = conv.roles
@@ -118,7 +128,7 @@ if __name__ == "__main__":
     parser.add_argument("--device", type=str, default="cuda")
     parser.add_argument("--conv-mode", type=str, default=None)
     parser.add_argument("--temperature", type=float, default=0.2)
-    parser.add_argument("--max-new-tokens", type=int, default=512)
+    parser.add_argument("--max-new-tokens", type=int, default=3000)
     parser.add_argument("--load-8bit", action="store_true")
     parser.add_argument("--load-4bit", action="store_true")
     parser.add_argument("--debug", action="store_true")
