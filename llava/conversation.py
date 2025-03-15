@@ -370,7 +370,7 @@ Answer the questions.""",
 )
 
 conv_qwen2_instruct = Conversation(
-    system="""<|im_start|>system\nYou are Qwen, created by Alibaba Cloud. You are a helpful assistant.<|im_end|>\n""",
+    system="""<|im_start|>system\nYou are Qwen, created by Alibaba Cloud. You are a helpful assistant.\n""",
     roles=("<|im_start|>user\n", "<|im_start|>assistant\n"),
     version="qwen2",
     messages=(),
