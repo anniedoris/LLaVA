@@ -6,7 +6,7 @@ IFS=',' read -ra GPULIST <<< "$gpu_list"
 CHUNKS=${#GPULIST[@]}
 
 CKPT="hf_llava-v1.5-13b"
-SPLIT="cadquery_test_data_subset100"
+SPLIT="external"
 
 for IDX in $(seq 0 $((CHUNKS-1))); do
     CUDA_VISIBLE_DEVICES=${GPULIST[$IDX]} python -m llava.eval.model_vqa_loader \
@@ -16,7 +16,6 @@ for IDX in $(seq 0 $((CHUNKS-1))); do
         --answers-file /orcd/data/faez/001/annie/llava/checkpoints/$CKPT/eval/$SPLIT/${CHUNKS}_${IDX}.jsonl \
         --num-chunks $CHUNKS \
         --chunk-idx $IDX \
-        --temperature 0 \
         --max_new_tokens 1402\
         --conv-mode vicuna_v1 &
 done
