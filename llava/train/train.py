@@ -419,6 +419,9 @@ def preprocess_v1(
     conv = conversation_lib.default_conversation.copy()
     roles = {"human": conv.roles[0], "gpt": conv.roles[1]}
 
+    print("Preprocess: sources initially")
+    print(sources)
+    
     # Apply prompt templates
     conversations = []
     for i, source in enumerate(sources):
@@ -427,12 +430,23 @@ def preprocess_v1(
             source = source[1:]
 
         conv.messages = []
+        
+        print("Single source")
+        print(source)
         for j, sentence in enumerate(source):
+            print("Single sentence")
+            print(sentence)
+            
             role = roles[sentence["from"]]
             assert role == conv.roles[j % 2], f"{i}"
             conv.append_message(role, sentence["value"])
         conversations.append(conv.get_prompt())
 
+    print("Preprocess: Conversations")
+    print(conversations)
+    
+    # raise ValueError("pause")
+    
     # Tokenize conversations
 
     if has_image:
@@ -583,6 +597,157 @@ def preprocess_mpt(
         input_ids=input_ids,
         labels=targets,
     )
+    
+def preprocess_qwen2(
+    sources,
+    tokenizer: transformers.PreTrainedTokenizer,
+    has_image: bool = False
+) -> Dict:
+    conv = conversation_lib.conv_qwen2_instruct.copy()
+    roles = {"human": conv.roles[0], "gpt": conv.roles[1]}
+    
+    # Apply prompt templates
+    conversations = []
+    for i, source in enumerate(sources):
+        if roles[source[0]["from"]] != conv.roles[0]:
+            # Skip the first one if it is not from human
+            source = source[1:]
+
+        conv.messages = []
+        
+        for j, sentence in enumerate(source):
+            
+            role = roles[sentence["from"]]
+            assert role == conv.roles[j % 2], f"{i}"
+            conv.append_message(role, sentence["value"])
+        conversations.append(conv.get_prompt())
+
+    if has_image:
+        input_ids = torch.stack([tokenizer_image_token(prompt, tokenizer, return_tensors='pt') for prompt in conversations], dim=0)
+    else:
+        raise ValueError("not implemented")
+    
+    targets = input_ids.clone()
+    
+    # Not handling multi-turn conversations
+    if len(conversations) > 1:
+        raise ValueError("Not Implemented Longer Conversations")
+    
+    for conversation, target in zip(conversations, targets):
+        
+        prompt_without_generation = conversation.split(conv.roles[1])[0]
+        prompt_with_generation = prompt_without_generation + conv.roles[1]
+        
+        len_to_mask = len(tokenizer_image_token(prompt_with_generation, tokenizer))
+        
+        target[:len_to_mask] = IGNORE_INDEX
+        
+        # tokens = [t.item() for t in target if t != -100]
+
+        # # Decode back to text
+        # decoded_text = tokenizer.decode(tokens)
+
+    return dict(
+        input_ids=input_ids,
+        labels=targets,
+    )
+
+# # fix: add qwen2
+# def preprocess_qwen2(
+#     sources,
+#     tokenizer: transformers.PreTrainedTokenizer,
+#     has_image: bool = False
+# ) -> Dict:
+#     # print('-----preprocess_qwen_2-------')
+#     conv = conversation_lib.default_conversation.copy()
+#     roles = {"human": conv.roles[0], "gpt": conv.roles[1]}
+
+#     # Apply prompt templates
+#     conversations = []
+#     for i, source in enumerate(sources):
+#         if roles[source[0]["from"]] != conv.roles[0]:
+#             # Skip the first one if it is not from human
+#             source = source[1:]
+
+#         conv.messages = []
+#         for j, sentence in enumerate(source):
+#             role = roles[sentence["from"]]
+#             assert role == conv.roles[j % 2], f"{i}"
+#             conv.append_message(role, sentence["value"])
+#         conversations.append(conv.get_prompt())
+
+#     # Tokenize conversations
+
+#     if has_image:
+#         input_ids = torch.stack([tokenizer_image_token(prompt, tokenizer, return_tensors='pt') for prompt in conversations], dim=0)
+#     else:
+#         input_ids = tokenizer(
+#             conversations,
+#             return_tensors="pt",
+#             padding="longest",
+#             max_length=tokenizer.model_max_length,
+#             truncation=True,
+#         ).input_ids
+
+#     targets = input_ids.clone()
+
+#     assert conv.sep_style == conversation_lib.SeparatorStyle.QWEN_2
+
+#     # Mask targets
+#     sep = conv.sep + conv.roles[1] + ": "
+#     for conversation, target in zip(conversations, targets):
+#         total_len = int(target.ne(tokenizer.pad_token_id).sum())
+
+#         rounds = conversation.split(conv.sep2)
+#         rounds_len = len(rounds)
+#         cur_len = 0
+#         # target[:cur_len] = IGNORE_INDEX
+#         for i, rou in enumerate(rounds):
+#             if rou == "":
+#                 break
+
+#             parts = rou.split(sep)
+#             if len(parts) != 2:
+#                 break
+#             parts[0] += sep
+
+#             if has_image:
+#                 round_ids = tokenizer_image_token(rou, tokenizer)
+#                 instruction_ids = tokenizer_image_token(parts[0], tokenizer)
+#                 equal_parts = [x == y for x, y in zip(round_ids, instruction_ids)]
+
+#                 instruction_len = equal_parts.index(False) if False in equal_parts else len(equal_parts)
+#                 round_len = len(round_ids)
+
+#             else:
+#                 round_ids = tokenizer(rou).input_ids
+#                 instruction_ids = tokenizer(parts[0]).input_ids
+#                 equal_parts = [x == y for x, y in zip(round_ids, instruction_ids)]
+
+#                 instruction_len = equal_parts.index(False) if False in equal_parts else len(equal_parts)
+#                 round_len = len(round_ids)
+
+#             if i != 0 and not tokenizer.legacy and IS_TOKENIZER_GREATER_THAN_0_14:
+#                 round_len += 1
+#                 instruction_len += 1
+
+#             target[cur_len: cur_len + instruction_len] = IGNORE_INDEX
+
+#             cur_len += round_len
+#         target[cur_len:] = IGNORE_INDEX
+
+#         if cur_len < tokenizer.model_max_length:
+#             if cur_len != total_len + rounds_len - 2:
+#                 target[:] = IGNORE_INDEX
+#                 print(
+#                     f"WARNING: tokenization mismatch: {cur_len} vs. {total_len}."
+#                     f" (ignored)"
+#                 )
+
+#     return dict(
+#         input_ids=input_ids,
+#         labels=targets,
+#     )
 
 
 def preprocess_plain(
@@ -627,6 +792,8 @@ def preprocess(
         return preprocess_v1(sources, tokenizer, has_image=has_image)
     if conversation_lib.default_conversation.version == "mpt":
         return preprocess_mpt(sources, tokenizer, has_image=has_image)
+    if conversation_lib.default_conversation.version == "qwen2":
+        return preprocess_qwen2(sources, tokenizer, has_image=has_image)
     # add end signal and concatenate together
     conversations = []
     for source in sources:
@@ -690,7 +857,7 @@ class LazySupervisedDataset(Dataset):
         return length_list
 
     def __getitem__(self, i) -> Dict[str, torch.Tensor]:
-        sources = self.list_data_dict[i]
+        sources = self.list_data_dict[i] 
         if isinstance(i, int):
             sources = [sources]
         assert len(sources) == 1, "Don't know why it is wrapped to a list"  # FIXME
@@ -721,6 +888,8 @@ class LazySupervisedDataset(Dataset):
                 self.data_args)
         else:
             sources = copy.deepcopy([e["conversations"] for e in sources])
+        
+        # This runs the preprocessing command
         data_dict = preprocess(
             sources,
             self.tokenizer,
@@ -893,7 +1062,7 @@ def train(attn_implementation=None):
         rank0_print("Adding LoRA adapters...")
         model = get_peft_model(model, lora_config)
 
-    if 'mpt' in model_args.model_name_or_path:
+    if 'mpt' in model_args.model_name_or_path: # TODO: should qwen trigger this?
         tokenizer = transformers.AutoTokenizer.from_pretrained(
             model_args.model_name_or_path,
             cache_dir=training_args.cache_dir,
@@ -925,8 +1094,8 @@ def train(attn_implementation=None):
         
         if tokenizer.unk_token:
             tokenizer.pad_token = tokenizer.unk_token
-        else: #ADDED for qwen
-            tokenizer.legacy = False #idk what this does exactly
+        # else: #ADDED for qwen
+        #     tokenizer.legacy = False #idk what this does exactly
         
         if model_args.version in conversation_lib.conv_templates:
             conversation_lib.default_conversation = conversation_lib.conv_templates[model_args.version] #TODO: add version for qwen

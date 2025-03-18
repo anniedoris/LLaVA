@@ -49,6 +49,7 @@ def main(args):
     elif "mpt" in model_name.lower():
         conv_mode = "mpt"
     elif "qwen2.5" in model_name.lower():
+        print("Using qwen2.5 conv mode")
         conv_mode = "qwen_2.5_instruct"
         # raise ValueError("not finished implementing")
     else:

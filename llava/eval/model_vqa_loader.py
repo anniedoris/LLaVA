@@ -39,7 +39,10 @@ class CustomDataset(Dataset):
     def __getitem__(self, index):
         line = self.questions[index]
         image_file = line["image"]
+        question_id = line["question_id"]
         qs = line["text"]
+        ground_truth = line["ground_truth"]
+        
         if self.model_config.mm_use_im_start_end:
             qs = DEFAULT_IM_START_TOKEN + DEFAULT_IMAGE_TOKEN + DEFAULT_IM_END_TOKEN + '\n' + qs
         else:
@@ -54,18 +57,22 @@ class CustomDataset(Dataset):
         image_tensor = process_images([image], self.image_processor, self.model_config)[0]
 
         input_ids = tokenizer_image_token(prompt, self.tokenizer, IMAGE_TOKEN_INDEX, return_tensors='pt')
+        question_token_count = input_ids.shape[0]
+        
+        ground_truth_tokens = self.tokenizer(ground_truth, return_tensors="pt")["input_ids"]
+        ground_truth_token_count = ground_truth_tokens.shape[1]
 
-        return input_ids, image_tensor, image.size
+        return input_ids, image_tensor, image.size, question_token_count, ground_truth_token_count
 
     def __len__(self):
         return len(self.questions)
 
 
 def collate_fn(batch):
-    input_ids, image_tensors, image_sizes = zip(*batch)
+    input_ids, image_tensors, image_sizes, question_token_count, ground_truth_token_count = zip(*batch)
     input_ids = torch.stack(input_ids, dim=0)
     image_tensors = torch.stack(image_tensors, dim=0)
-    return input_ids, image_tensors, image_sizes
+    return input_ids, image_tensors, image_sizes, question_token_count, ground_truth_token_count
 
 
 # DataLoader
@@ -95,7 +102,7 @@ def eval_model(args):
 
     data_loader = create_data_loader(questions, args.image_folder, tokenizer, image_processor, model.config)
 
-    for (input_ids, image_tensor, image_sizes), line in tqdm(zip(data_loader, questions), total=len(questions)):
+    for (input_ids, image_tensor, image_sizes, question_token_count, ground_truth_token_count), line in tqdm(zip(data_loader, questions), total=len(questions)):
         idx = line["question_id"]
         cur_prompt = line["text"]
 
@@ -114,6 +121,11 @@ def eval_model(args):
                 use_cache=True)
 
         outputs = tokenizer.batch_decode(output_ids, skip_special_tokens=True)[0].strip()
+        output_tokens = tokenizer(outputs, return_tensors="pt")["input_ids"]
+        output_token_count = output_tokens.shape[1]
+        
+        # outputs = ""
+        # output_token_count = ""
 
         ans_id = shortuuid.uuid()
         ans_file.write(json.dumps({"question_id": idx,
@@ -121,6 +133,9 @@ def eval_model(args):
                                    "text": outputs,
                                    "answer_id": ans_id,
                                    "model_id": model_name,
+                                   "question_token_count": question_token_count,
+                                   "ground_truth_token_count": ground_truth_token_count,
+                                   "output_token_count": output_token_count,
                                    "metadata": {}}) + "\n")
         # ans_file.flush()
     ans_file.close()
