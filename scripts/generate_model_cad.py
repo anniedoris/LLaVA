@@ -19,7 +19,7 @@ def wait_for_file(file_path, timeout=2, check_interval=0.1):
 
 def process_cad(args_tuple):
     """Function to write and run a single Python script."""
-    code, id_, code_dir, stl_dir, pc_dir_base, pc_reps, code_language = args_tuple
+    code, id_, code_dir, stl_dir, step_dir, pc_dir_base, pc_reps, code_language = args_tuple
 
     # Checks if the code can be run, without any modifications. Checking for syntax errors
     file_path = f"{code_dir}/{id_}.py"
@@ -32,8 +32,10 @@ def process_cad(args_tuple):
         # Adds code to generate stl, checks that STL is generated.
         if code_language == "pythonocc":
             code += f"\nwrite_stl_file(body, \"{stl_dir}/{id_}.stl\")"
+            raise ValueError("Implement STEP generation")
         elif code_language == "cadquery":
-            code += f"\ncq.exporters.export(solid, \"{stl_dir}/{id_}.stl\")"
+            code += f"\nimport cadquery as cq\ncq.exporters.export(solid, \"{stl_dir}/{id_}.stl\")\n"
+            code += f"\nimport cadquery as cq\ncq.exporters.export(solid, \"{step_dir}/{id_}.step\")\n"
         else:
             raise TypeError("CAD code language not supported!")
         write_python_file(code, f"{code_dir}/{id_}.py")
@@ -73,12 +75,16 @@ if __name__ == "__main__":
     stl_dir = ROOT_CHECKPOINT_DIR + f"/{args.model_tested}/eval/{args.dataset_name}/model_stl"
     os.makedirs(stl_dir, exist_ok=True)
     
+    # Set up for STL generation
+    step_dir = ROOT_CHECKPOINT_DIR + f"/{args.model_tested}/eval/{args.dataset_name}/model_step"
+    os.makedirs(step_dir, exist_ok=True)
+    
     # Set up for point cloud generation
     pc_dir_base = ROOT_CHECKPOINT_DIR + f"/{args.model_tested}/eval/{args.dataset_name}/model_point_cloud"
     for i in range(args.pc_reps):
         os.makedirs(pc_dir_base + f"_{i}", exist_ok=True)
     
-    input_data = [(model_code[i], ids[i], code_dir, stl_dir, pc_dir_base, args.pc_reps, args.code_language) for i in range(len(model_code))]
+    input_data = [(model_code[i], ids[i], code_dir, stl_dir, step_dir, pc_dir_base, args.pc_reps, args.code_language) for i in range(len(model_code))]
     
     if args.parallel:
         num_workers = min(8, cpu_count())  # Use 8 CPUs or the max available
