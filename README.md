@@ -39,15 +39,27 @@ python evaluate_ae_cd.py --pc_folder "/orcd/data/faez/001/annie/llava/checkpoint
 
 --test_jsonl should point to the question file .jsonl that the model was tested on.
 
-### Evaluating Open Source External Models
-With llm_test activate:
+### To evaluate IOU
+Go to the pc_align folder at the same level as LLaVA in compute. Run the cadquery_align.ipynb with the pc_eval conda environment activated.
 
+### Evaluating Open Source External Models
+
+## InternVL
+(with llm_test activated)
 ```
 python scripts/eval_external_models/internvl.py
 ```
 
 ## Qwen Dev
 Use conda environment ```llava_train```. If you make modifications to certain things, will need to reinstall llava as a package via pip install -e .
+
+#### Notes on how test_finetune_qwen2.5 is trained:
+
+Pretraining: pretrain_h100_qwen2.sh.
+
+Finetuning: finetune_h100_qwen2.sh
+
+Eval: gencad_cadquery_qwen.sh
 
 ### Chatting with Pretrained Qwen
 ```python -m llava.serve.cli --model-base Qwen/Qwen2.5-Coder-7B-Instruct --model-path /orcd/data/faez/001/annie/llava/checkpoints/Qwen2.5-Coder-7B-Instruct-pretrain-mycode --image-file /orcd/data/faez/001/annie/llava/finetune_data/gencad_im/0000/00000007_0.png --temperature 0.0```
