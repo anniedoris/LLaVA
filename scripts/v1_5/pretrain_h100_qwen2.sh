@@ -13,11 +13,11 @@ deepspeed llava/train/train_mem.py \
     --mm_use_im_start_end False \
     --mm_use_im_patch_token False \
     --bf16 True \
-    --output_dir /orcd/data/faez/001/annie/llava/checkpoints/Qwen2.5-Coder-14B-Instruct-pretrain-mycode-2 \
+    --output_dir /orcd/data/faez/001/annie/llava/checkpoints/Qwen2.5-Coder-14B-Instruct-pretrain-mycode-debug \
     --num_train_epochs 1 \
-    --per_device_train_batch_size 16 \
+    --per_device_train_batch_size 8 \
     --per_device_eval_batch_size 4 \
-    --gradient_accumulation_steps 4 \
+    --gradient_accumulation_steps 8 \
     --evaluation_strategy "no" \
     --save_strategy "steps" \
     --save_steps 1000 \
