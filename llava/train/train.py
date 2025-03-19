@@ -963,7 +963,15 @@ def train(attn_implementation=None):
     model_args, data_args, training_args = parser.parse_args_into_dataclasses()
     local_rank = training_args.local_rank
     compute_dtype = (torch.float16 if training_args.fp16 else (torch.bfloat16 if training_args.bf16 else torch.float32))
+    print("MODEL ARGS")
+    print(model_args)
 
+    print("DATA ARGS")
+    print(data_args)
+    
+    print("TRAINING ARGS")
+    print(training_args)
+    
     # Stays the same
     bnb_model_from_pretrained_args = {}
     if training_args.bits in [4, 8]:
@@ -1028,14 +1036,17 @@ def train(attn_implementation=None):
         )
     model.config.use_cache = False
 
+    # Will not triggert duing pretraining
     if model_args.freeze_backbone:
         model.model.requires_grad_(False)
 
+    # Will not trigger
     if training_args.bits in [4, 8]:
         from peft import prepare_model_for_kbit_training
         model.config.torch_dtype=(torch.float32 if training_args.fp16 else (torch.bfloat16 if training_args.bf16 else torch.float32))
         model = prepare_model_for_kbit_training(model, use_gradient_checkpointing=training_args.gradient_checkpointing)
 
+    # Will trigger
     if training_args.gradient_checkpointing:
         if hasattr(model, "enable_input_require_grads"):
             model.enable_input_require_grads()
@@ -1044,6 +1055,7 @@ def train(attn_implementation=None):
                 output.requires_grad_(True)
             model.get_input_embeddings().register_forward_hook(make_inputs_require_grad)
 
+    # Will not trigger
     if training_args.lora_enable:
         from peft import LoraConfig, get_peft_model
         lora_config = LoraConfig(
