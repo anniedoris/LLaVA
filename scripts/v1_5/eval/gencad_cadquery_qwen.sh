@@ -5,7 +5,7 @@ IFS=',' read -ra GPULIST <<< "$gpu_list"
 
 CHUNKS=${#GPULIST[@]}
 
-CKPT="test_finetune_qwen2.5"
+CKPT="Qwen2.5-Coder-14B-Instruct-cadquery-debug"
 SPLIT="cadquery_test_data_subset100"
 
 for IDX in $(seq 0 $((CHUNKS-1))); do
