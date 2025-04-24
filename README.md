@@ -40,7 +40,7 @@ Inside the checkpoint, a new directory should be created called eval/{dataset_na
 
 With pc_eval conda environment activated, run the scripts/cadquery_align.ipynb. Open the notebook and point ```model_generated_steps_dir``` to the path of the step files generated in the previous step. 
 
-### To evaluate accuracy of point clouds
+<!-- ### To evaluate accuracy of point clouds
 
 TODO: clone Annie's fork of DeepCAD at the same level as this LLaVA repo. cd into evaluation director in DeepCAD. 
 
@@ -53,7 +53,7 @@ python evaluate_ae_cd.py --pc_folder "/orcd/data/faez/001/annie/llava/checkpoint
 --test_jsonl should point to the question file .jsonl that the model was tested on.
 
 ### To evaluate IOU
-Go to the pc_align folder at the same level as LLaVA in compute. Run the cadquery_align.ipynb with the pc_eval conda environment activated.
+Go to the pc_align folder at the same level as LLaVA in compute. Run the cadquery_align.ipynb with the pc_eval conda environment activated. -->
 
 ### Evaluating Open Source External Models
 
