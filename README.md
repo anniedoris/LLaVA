@@ -15,7 +15,14 @@ wget http://ecx.images-amazon.com/images/I/51YTH4k3fUL.jpg
 cp 51YTH4k3fUL.jpg playground/data/ocr_vqa/images/1437717772.jpg
 ```
 
-## Annie's Additions for Computing Metrics
+## Annie's Additions for Evaluating Models
+
+### To run inference on LLM...
+Open scripts/v1_5/eval/gencad_cadquery.sh and update model checkpoint directory you want to evaluate. With llava_train conda environment activated, run:
+
+```
+CUDA_VISIBLE_DEVICES=0,1,2,3 ./scripts/v1_5/eval/gencad_cadquery.sh
+```
 
 ### To generate code files, STLs, and point clouds...
 
@@ -26,6 +33,12 @@ python scripts/generate_model_cad.py --dataset_name {dataset_name} --model_teste
 ```
 
 --pc_reps dictates how many point clouds will be generated for each CAD (different random samples). Currently, only --parallel is supported.
+
+Inside the checkpoint, a new directory should be created called eval/{dataset_name}/model_steps. It will be important to know the path to this directory for the next step.
+
+### Computing IoU
+
+With pc_eval conda environment activated, run the scripts/cadquery_align.ipynb. Open the notebook and point ```model_generated_steps_dir``` to the path of the step files generated in the previous step. 
 
 ### To evaluate accuracy of point clouds
 
@@ -63,6 +76,12 @@ Eval: gencad_cadquery_qwen.sh
 
 ### Chatting with Pretrained Qwen
 ```python -m llava.serve.cli --model-base Qwen/Qwen2.5-Coder-7B-Instruct --model-path /orcd/data/faez/001/annie/llava/checkpoints/Qwen2.5-Coder-7B-Instruct-pretrain-mycode --image-file /orcd/data/faez/001/annie/llava/finetune_data/gencad_im/0000/00000007_0.png --temperature 0.0```
+
+### Chatting with Finetuned Qwen
+Follow this convention:
+```
+python -m llava.serve.cli --model-path /orcd/data/faez/001/annie/llava/checkpoints/Qwen2.5-Coder-14B-Instruct-cadquery-debug --image-file /orcd/data/faez/001/annie/llava/finetune_data/gencad_im/0067/00675497_0.png
+```
 
 ## Running on H100s
 ```srun -p pi_faez -t 3-00:00 -n 64 --mem=200000 --gres=gpu:4 --pty bash````
