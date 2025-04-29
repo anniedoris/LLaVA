@@ -4,7 +4,7 @@ deepspeed llava/train/train_mem.py \
     --deepspeed ./scripts/zero3.json \
     --model_name_or_path lmsys/vicuna-13b-v1.5 \
     --version v1 \
-    --data_path /orcd/data/faez/001/annie/llava/finetune_data/cadquery_train_data_4096_realimage_gemini_2445.json \
+    --data_path /orcd/data/faez/001/annie/llava/finetune_data/cadquery_train_data_4096_realimage_controlnetplusplus.json \
     --image_folder /orcd/data/faez/001/annie/llava/finetune_data \
     --vision_tower openai/clip-vit-large-patch14-336 \
     --pretrain_mm_mlp_adapter /orcd/data/faez/001/annie/llava/checkpoints/llava-v1.5-13b-pretrain-4gpu-4096/mm_projector.bin \
@@ -15,7 +15,7 @@ deepspeed llava/train/train_mem.py \
     --image_aspect_ratio pad \
     --group_by_modality_length True \
     --bf16 True \
-    --output_dir /orcd/data/faez/001/annie/llava/checkpoints/llava-v1.5-13b-4gpu-cadquery-realimage-gemini-2445 \
+    --output_dir /orcd/data/faez/001/annie/llava/checkpoints/llava-v1.5-13b-4gpu-cadquery-realimage-controlnetplusplus \
     --num_train_epochs 1 \
     --per_device_train_batch_size 4 \
     --per_device_eval_batch_size 4 \
